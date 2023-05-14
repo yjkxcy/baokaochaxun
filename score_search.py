@@ -276,6 +276,8 @@ def backfill(item, option):
 	# print(tmp)
 	return tmp
 
+# {'学校代号': ['浙江'], '学校名称': ['浙江大学'], '专业名称': ['信息'], '分数线': '600-700', '位次': '1-10000'}
+
 def combiOption(option):
 	'''对用户输入的学校名称和专业名称排列组合
 	param option: {'学校名称': ['浙江大学','南京大学'], '专业名称': ['计算机','信息'], '学校代号': None, '分数线': '600-635', '位次': None}
@@ -341,7 +343,8 @@ def main(score_df):
  
 
 if __name__ == '__main__':
-	fpath = r'C:\Users\user\Desktop\报考'     #投档文件保存路径
+	fpath = Path.cwd()     #投档文件保存路径
+	# fpath = r'C:\Users\user\Desktop\报考'     #投档文件保存路径
 	scoreDict = {
 		'2020年一段线': '2020年一段投档线.xls',
 		'2021年一段线': '2021年一段投档线.xls',
