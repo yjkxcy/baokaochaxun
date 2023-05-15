@@ -4,19 +4,7 @@ import pandas as pd
 from itertools import product
 from copy import deepcopy
 from pathlib import Path
-# from pprint import pprint
-# from functools import reduce 
-# from pandas.api.types import is_string_dtype, is_numeric_dtype, is_float_dtype
 
-
-#命令行提示信息
-promptMsg = {
-	'学校名称': '学校名称，多个输入间使用空格分隔[浙江大学]',
-	'专业名称': '专业名称，多个输入间使用空格分隔[计算机]',
-	'分数线': '分数线[600或610-615]',
-	'位次': '位次范围[100或980-1000]',
-	'学校代号': '学校所属地区，多个输入间使用空格分隔[浙江]'
-}
 
 #省(市、自治区)代码
 schoolCode = {
@@ -55,8 +43,17 @@ schoolCode = {
 	'军校': ('90'),
 }
 
+#命令行提示信息
+promptMsg = {
+	'学校名称': '学校名称，多个输入间使用空格分隔[浙江大学]',
+	'专业名称': '专业名称，多个输入间使用空格分隔[计算机]',
+	'分数线': '分数线[600或610-615]',
+	'位次': '位次范围[100或980-1000]',
+	'学校代号': '学校所属地区，多个输入间使用空格分隔[浙江]'
+}
+
 def setDisplayType():
-	'''打印效果设置'''
+	'''命令行界面打印效果设置'''
 	pd.set_option('display.max_rows', None)
 	pd.set_option('display.max_columns', None)
 	pd.set_option('display.width', None)
@@ -76,14 +73,14 @@ def userConfirm(description):
 		print(r'无效输入，请重新输入！')
 
 def inputNum(description, convert=int):
-	'''包装了input异常处理'''
+	'''包装了input输入数字的异常处理'''
 	try:
 		return convert(input(description).strip())
 	except ValueError as err:
 		pass
 
-def parserNumVal(value):
-	'''解析输入的数字
+def checkNum(value):
+	'''检查输入的数字，如 分数线、位次的输入值
 	   :param value: 用户的输入 '630', '638-668'
 	   :return: 返回元组 (630, 630), (638, 668)，不合规输入返回None
 	'''
@@ -92,30 +89,34 @@ def parserNumVal(value):
 	elif re.match(r'^(\d+)-(\d+)$', value):   #如：620-645
 		return re.match(r'^(\d+)-(\d+)$', value).group(0).split('-')
 
-def inputRange(description):
+def mapNumRange(num):
 	'''数字范围合规性检测
 	   :param : 用户的输入 '630', '638-668'
-	   :return: 返回字符串类型 '630-630', '638-668'，不合规输入返回None
+	   :return: 返回字符串类型 '630-630', '638-668'，不合规输入返回空字符串
 	'''
-	result = parserNumVal(input(description).strip())
+	result = checkNum(num.strip())
 	if result:
 		return f'{result[0]}-{result[1]}'
+	else:
+		return ''
+
+def inputNumRange(description):
+	'''处理用户输入的数字，合规性检测后返回
+	   :param : 用户的输入 '630', '638-668'
+	   :return: 返回字符串类型 '630-630', '638-668'，不合规输入返回空字符串
+	'''
+	return mapNumRange(input(description))
 
 def inputStr(description):
-	'''处理字符串输入
+	'''处理字符串输入，转换为列表后返回
 	   :param : 用户的输入 '浙江大学 南京大学'
 	   :return: 返回元组 ['浙江大学', '南京大学']，不合规输入返回None
 
 	'''
 	return input(description).strip().split()  #去除两边空格并分隔多个输入值
 
-def inputCode(description):
-	'''地区编码映射
-	   :param : 用户的输入 '浙江 上海 江苏'
-	   :return: 返回元组 ['0-999', '3100-3199', '3200-3399']，不合规输入返回None
-
-	'''
-	regions = input(description).strip().split()   #[浙江，上海，江苏]
+def mapCode(regions):
+	'''地区名转换为学校代号 [浙江，上海，江苏] to ['0-999', '3100-3199', '3200-3399']'''
 	res = []
 	for region in regions:
 		if region == '浙江':
@@ -127,6 +128,15 @@ def inputCode(description):
 		elif region in schoolCode.keys():
 			res.append(f'{schoolCode[region]}00-{schoolCode[region]}99')
 	return res
+
+def inputCode(description):
+	'''输入地区编码并映射
+	   :param : 用户的输入 '浙江 上海 江苏'
+	   :return: 返回列表 ['0-999', '3100-3199', '3200-3399']，不合规输入返回空列表
+
+	'''
+	regions = input(description).strip().split()   #[浙江，上海，江苏]
+	return mapCode(regions)
 
 class ConsoleMenu(object):
 	'''控制台风格菜单
@@ -178,7 +188,7 @@ class UserInput(object):
 		elif selectCol == '学校代号':
 			input1 = inputCode
 		elif selectCol in ('分数线', '位次'):
-			input1 = inputRange
+			input1 = inputNumRange
 		searchValue = input1(f'请输入{promptMsg[selectCol]}:')
 		while not searchValue:
 			searchValue = input1(f'输入有误请重新输入{promptMsg[selectCol]}:')

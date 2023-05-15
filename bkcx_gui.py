@@ -14,17 +14,6 @@ helper= '''
 
 		'''
 
-def mapNumRange(num):
-	'''数字范围合规性检测
-	   :param : 用户的输入 '630', '638-668'
-	   :return: 返回字符串类型 '630-630', '638-668'，不合规输入返回None
-	'''
-	result = parserNumVal(num)
-	if result:
-		return f'{result[0]}-{result[1]}'
-	else:
-		return ''
-
 def mapCode(regions):
 	'''学校代号转换 [浙江，上海，江苏] to ['0-999', '3100-3199', '3200-3399']'''
 	res = []
@@ -48,8 +37,8 @@ def showres(score_df, args):
 		input_opt['学校代号'] = mapCode(args[0].strip().split())
 		input_opt['学校名称'] = args[1].strip().split()
 		input_opt['专业名称'] = args[2].strip().split()
-		input_opt['分数线'] = mapNumRange(args[3].strip())
-		input_opt['位次'] = mapNumRange(args[4].strip())
+		input_opt['分数线'] = mapNumRange(args[3])
+		input_opt['位次'] = mapNumRange(args[4])
 		print(input_opt)
 		options = combiOption(input_opt)
 		res = yearSearch(score_df[year], options)
